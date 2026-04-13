@@ -1,0 +1,64 @@
+@startuml
+skinparam monochrome true
+skinparam sequenceArrowThickness 1
+skinparam roundcorner 10
+
+actor Admin
+actor Doctor
+actor Patient
+
+participant "User Panel" as UI
+
+participant "User Management\nProcess" as UserProc
+participant "Slot Management\nProcess" as SlotProc
+participant "Appointment Booking\nProcess" as BookingProc
+participant "Round Robin\nAssignment Process" as RRProc
+
+database "System Database\n(Users, Doctors,\nSlots, Appointments)" as DB
+
+'================================================
+' Admin Management Process
+'================================================
+== Admin Manages doctors, patients and slots == 
+Admin -> UI : Manage doctors, patients, slots
+UI -> UserProc : Admin management request
+UserProc -> DB : Create / Update user & doctor data
+DB --> UserProc : Data saved
+UserProc --> UI : Management confirmation
+
+'================================================
+' Doctor Slot Management Process
+'================================================
+== Doctor Manages Availability Slots ==
+Doctor -> UI : Manage availability slots
+UI -> SlotProc : Slot update request
+SlotProc -> DB : Store / update slot data
+DB --> SlotProc : Slot saved
+SlotProc --> UI : Slot update confirmation
+
+'================================================
+' Patient Appointment Booking Process
+'================================================
+== Patient Books Appointment==
+Patient -> UI : Book appointment
+UI -> BookingProc : Appointment booking request
+BookingProc -> DB : Fetch available doctors & slots
+DB --> BookingProc : Availability data
+
+'================================================
+' Round Robin Assignment Process
+'================================================
+BookingProc -> RRProc : Assign doctor (Round Robin)
+RRProc -> DB : Get last assigned doctor
+DB --> RRProc : Last assignment info
+RRProc -> DB : Select & lock next available doctor
+RRProc --> BookingProc : Assigned doctor
+
+'================================================
+' Booking Confirmation
+'================================================
+BookingProc -> DB : Save appointment details
+DB --> BookingProc : Appointment stored
+BookingProc --> UI : Booking confirmation
+UI --> Patient : Appointment details
+@enduml
